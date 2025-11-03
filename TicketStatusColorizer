@@ -1,0 +1,50 @@
+// ==UserScript==
+// @name         Ticket Status Colorizer
+// @namespace    https://tu-dominio.com/
+// @version      1.0
+// @description  Cambia el color de los estados de tickets según su valor
+// @author       Tú
+// @match        https://tu-dominio.com/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // Mapa de estados → colores
+    const statusColors = {
+        "New": "yellow",
+        "In Progress": "blue",
+        "Awaiting Help": "purple",
+        "With Product Team": "purple",
+        "With SRE Team": "purple",
+        "Pending": "blue",
+        "Inactive": "gray",
+        "Solution Proposed": "green",
+        "Solution Accepted": "green",
+        "Closed": "black"
+    };
+
+    // Selector del elemento donde aparece el estado
+    // ⚠️ Cámbialo por el que se use en tu página (por ejemplo ".ticket-status" o ".status-label")
+    const STATUS_SELECTOR = ".ticket-status";
+
+    // Función que aplica los colores
+    function colorizeStatuses() {
+        document.querySelectorAll(STATUS_SELECTOR).forEach(el => {
+            const text = el.textContent.trim();
+            if (statusColors[text]) {
+                el.style.color = statusColors[text];
+                el.style.fontWeight = "bold";
+            }
+        });
+    }
+
+    // Ejecutar al cargar
+    window.addEventListener('load', colorizeStatuses);
+
+    // Reaplicar cada vez que cambia el DOM (útil para sitios dinámicos tipo React o Jira)
+    const observer = new MutationObserver(colorizeStatuses);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+})();
