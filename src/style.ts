@@ -130,6 +130,10 @@ article.lesa-ui-event-highlighted {
 .lesa-ui-form-field {
   display: flex;
   flex-direction: column;
+  grid-column: span 2;
+}
+
+.sidebar_box_container .lesa-ui-form-field {
   margin-bottom: 0.5em;
 }
 
@@ -372,7 +376,13 @@ div[data-cy-test-id="submit_button-menu"] > * > * > div[data-cy-test-id="status-
   opacity: 0;
   pointer-events: none;
 }
-`;
+
+[data-test-id="header-tablist"][data-visible-tabs="0"] #close-all-tabs-btn,
+[data-test-id="header-tablist"][data-visible-tabs="1"] #close-all-tabs-btn {
+  display: none
+}
+`
+;
 }
 
 var head = <HTMLHeadElement> document.querySelector('head');

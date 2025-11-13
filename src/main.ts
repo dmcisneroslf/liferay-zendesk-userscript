@@ -488,62 +488,76 @@ function isBadgeInPopup(badge: HTMLElement) : boolean {
  * Close all tabs button
  */
 function closeAllTabs() {
-     const tablist = document.querySelector('[data-test-id="header-tablist"]');
+  const tablist = document.querySelector('[data-test-id="header-tablist"]:not(.lesa-ui-close-all-tabs)');
 
-    const visibleCloseButtons = Array.from(document.querySelectorAll('[data-test-id="close-button"]'))
-    .filter((btn: HTMLElement) => {
-        const style = window.getComputedStyle(btn);
-        return style.display !== 'none' && style.visibility !== 'hidden' && btn.offsetParent !== null;
-    });
+  if (!tablist) {
+    return;
+  }
 
-    if (tablist && visibleCloseButtons.length > 0 && !document.querySelector('#close-all-tab-btn')) {
-        const newDiv = document.createElement('div');
-        newDiv.className = 'sc-19uji9v-0 dcLIks';
+  tablist.classList.add('lesa-ui-close-all-tabs');
 
-        const button = document.createElement('button');
-        button.id = 'close-all-tab-btn';
-        button.type = 'button';
-        button.setAttribute('aria-haspopup', 'false');
-        button.setAttribute('aria-expanded', 'false');
-        button.setAttribute('data-test-id', 'close-all-tabs-button');
-        button.className = 'sc-1yqwijl-0 fSkeuV';
+  // Create the wrapper div
+  const wrapper = document.createElement('div');
+  wrapper.className = 'sc-19uji9v-0 dcLIks'; // same styling as native tab button container
 
-        const innerDiv = document.createElement('div');
-        innerDiv.style.display = 'flex';
-        innerDiv.style.alignItems = 'center';
-        innerDiv.style.gap = '6px';
+  // Create the button
+  const button = document.createElement('button');
+  button.id = 'close-all-tabs-btn';
+  button.type = 'button';
+  button.setAttribute('data-test-id', 'close-all-tabs-button');
+  button.className = 'sc-1yqwijl-0 fSkeuV';
 
-        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        icon.setAttribute('width', '12');
-        icon.setAttribute('height', '12');
-        icon.setAttribute('viewBox', '0 0 12 12');
-        icon.setAttribute('aria-hidden', 'true');
-        icon.setAttribute('focusable', 'false');
-        icon.classList.add('sc-y7z43x-0', 'gGJlIS');
+  // Inner structure (icon + label)
+  const content = document.createElement('div');
+  content.style.display = 'flex';
+  content.style.alignItems = 'center';
+  content.style.gap = '6px';
 
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('stroke', 'currentColor');
-        path.setAttribute('stroke-linecap', 'round');
-        path.setAttribute('d', 'M3 9L9 3M9 9L3 3');
-        icon.appendChild(path);
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.setAttribute('width', '12');
+  icon.setAttribute('height', '12');
+  icon.setAttribute('viewBox', '0 0 12 12');
+  icon.setAttribute('aria-hidden', 'true');
+  icon.setAttribute('focusable', 'false');
+  icon.classList.add('sc-y7z43x-0', 'gGJlIS');
 
-        const span = document.createElement('span');
-        span.className = 'sc-10vdpwu-0 hysyZs';
-        span.textContent = 'Close all';
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('d', 'M3 9L9 3M9 9L3 3');
+  icon.appendChild(path);
 
-        innerDiv.appendChild(icon);
-        innerDiv.appendChild(span);
-        button.appendChild(innerDiv);
-        newDiv.appendChild(button);
-        tablist.appendChild(newDiv);
+  const label = document.createElement('span');
+  label.className = 'sc-10vdpwu-0 hysyZs';
+  label.textContent = 'Close all';
 
-        button.addEventListener('click', () => {
-          if (confirm("Are you sure you want to proceed?")) {
-            document.querySelectorAll('[data-test-id="close-button"]').forEach((btn: HTMLElement) => btn.click());
-            button.remove();
-          }
-        });
+  content.appendChild(icon);
+  content.appendChild(label);
+  button.appendChild(content);
+  wrapper.appendChild(button);
+  tablist.appendChild(wrapper);
+
+  button.addEventListener('click', () => {
+    if (confirm('Are you sure you want to close all tabs?')) {
+      tablist.querySelectorAll('[data-test-id="close-button"]:not(.collapsed)').forEach((btn: HTMLElement) => btn.click());
     }
+  });
+
+  const updateVisibleTabCount = () => {
+    const visibleCloseButtons = Array.from(tablist.querySelectorAll('[data-test-id="close-button"]:not(.collapsed)'));
+    tablist.setAttribute('data-visible-tabs', String(visibleCloseButtons.length));
+  };
+
+  updateVisibleTabCount();
+
+  const observer = new MutationObserver(updateVisibleTabCount);
+
+  observer.observe(tablist, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style', 'aria-selected', 'aria-hidden']
+  });
 }
 
 function updateZendeskUI() : void {
